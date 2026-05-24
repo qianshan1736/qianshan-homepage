@@ -321,8 +321,26 @@ h3 {
   font-size: 21px;
 }
 
+.work-title-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(63, 117, 109, 0.32);
+  text-underline-offset: 5px;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.work-title-link:hover,
+.work-title-link:focus-visible {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
 .work-card p {
   margin-bottom: 4px;
+}
+
+.state-card {
+  max-width: 540px;
 }
 
 .visual {
