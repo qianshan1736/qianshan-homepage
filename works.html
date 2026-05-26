@@ -8,7 +8,7 @@
     <meta name="description" content="找乐子的千山的个人作品。">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body data-page="works">
     <header class="site-header">
       <a class="brand" href="index.html" aria-label="找乐子的千山首页">
         <span class="brand-mark" role="img" aria-label="找乐子的千山头像">山</span>
@@ -32,19 +32,18 @@
       <section class="section-grid page-section" aria-labelledby="works-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">来自飞书多维表</p>
-            <h2 id="works-title">动态作品列表</h2>
+            <p class="eyebrow">作品集</p>
+            <h2 id="works-title">最近做过的东西</h2>
           </div>
         </div>
-        <div class="cards works-grid" id="works-grid" aria-live="polite">
+        <div class="cards works-grid" data-works-grid aria-live="polite">
           <article class="work-card state-card">
             <div class="visual visual-empty"></div>
             <div class="card-meta">
               <span>加载中</span>
-              <span>飞书数据</span>
             </div>
             <h3>正在读取作品</h3>
-            <p>稍等一下，正在从多维表里取最新内容。</p>
+            <p>稍等一下，正在取最新内容。</p>
           </article>
         </div>
       </section>
@@ -53,109 +52,6 @@
       <span>找乐子的千山</span>
       <span>作品</span>
     </footer>
-    <script>
-      const FEISHU_RECORDS_API = 'https://qianshan-homepage-d5dbe6ce091c85-1305986389.ap-shanghai.app.tcloudbase.com/api/records?page_size=50';
-      const visualClasses = ['visual-a', 'visual-b', 'visual-c'];
-      const worksGrid = document.querySelector('#works-grid');
-
-      function escapeHtml(value) {
-        return String(value || '')
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
-      }
-
-      function normalizeLink(value) {
-        if (!value) {
-          return '';
-        }
-
-        if (typeof value === 'string') {
-          return value.trim();
-        }
-
-        if (Array.isArray(value)) {
-          const firstLink = value.find((item) => item && (item.link || item.url || item.text));
-          return firstLink ? String(firstLink.link || firstLink.url || firstLink.text || '').trim() : '';
-        }
-
-        if (typeof value === 'object') {
-          return String(value.link || value.url || value.text || '').trim();
-        }
-
-        return '';
-      }
-
-      function renderState(title, text, label = '提示') {
-        worksGrid.innerHTML = `
-          <article class="work-card state-card">
-            <div class="visual visual-empty"></div>
-            <div class="card-meta">
-              <span>${escapeHtml(label)}</span>
-              <span>飞书数据</span>
-            </div>
-            <h3>${escapeHtml(title)}</h3>
-            <p>${escapeHtml(text)}</p>
-          </article>
-        `;
-      }
-
-      function renderWorks(records) {
-        const works = records
-          .map((item) => item.fields || {})
-          .map((fields) => ({
-            name: String(fields['名称'] || '').trim(),
-            intro: String(fields['介绍'] || '').trim(),
-            link: normalizeLink(fields['链接'])
-          }))
-          .filter((item) => item.name);
-
-        if (works.length === 0) {
-          renderState('暂时没有可展示的作品', '在飞书多维表里填写「名称」后，这里会自动出现。', '空状态');
-          return;
-        }
-
-        worksGrid.innerHTML = works.map((work, index) => {
-          const visualClass = visualClasses[index % visualClasses.length];
-          const name = escapeHtml(work.name);
-          const intro = escapeHtml(work.intro || '这条作品还没有补充介绍。');
-          const link = escapeHtml(work.link);
-          const title = work.link
-            ? `<a class="work-title-link" href="${link}" target="_blank" rel="noopener noreferrer">${name}</a>`
-            : name;
-
-          return `
-            <article class="work-card">
-              <div class="visual ${visualClass}"></div>
-              <div class="card-meta">
-                <span>飞书记录</span>
-                <span>${work.link ? '可访问' : '未放链接'}</span>
-              </div>
-              <h3>${title}</h3>
-              <p>${intro}</p>
-            </article>
-          `;
-        }).join('');
-      }
-
-      async function loadWorks() {
-        try {
-          const response = await fetch(FEISHU_RECORDS_API);
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || data.error || '读取失败');
-          }
-
-          renderWorks(data.items || []);
-        } catch (error) {
-          renderState('作品加载失败', error.message || '请稍后再试。', '错误');
-        }
-      }
-
-      loadWorks();
-    </script>
+    <script src="site-data.js"></script>
   </body>
 </html>

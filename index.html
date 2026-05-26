@@ -8,7 +8,7 @@
     <meta name="description" content="找乐子的千山，分享作品与生活里的小小乐子。">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body data-page="home">
     <header class="site-header">
       <a class="brand" href="index.html" aria-label="找乐子的千山首页">
         <span class="brand-mark" role="img" aria-label="找乐子的千山头像">山</span>
@@ -24,7 +24,7 @@
 
     <main>
       <section class="hero">
-        <div class="hero-copy">
+        <div class="hero-copy" data-home-copy>
           <p class="eyebrow">找乐子的人</p>
           <h1>找乐子的千山</h1>
           <p class="lead">工作那么累，为什么不在生活中找点乐子放松下。</p>
@@ -40,7 +40,7 @@
             <span>今日小乐子</span>
             <span>三件</span>
           </div>
-          <div class="moment-stack">
+          <div class="moment-stack" data-home-moments>
             <span>路过一家很会晒太阳的咖啡店</span>
             <span>把麻烦事拆成一个能完成的小动作</span>
             <span>在普通日子里捡到一点轻松</span>
@@ -53,33 +53,14 @@
           <p class="eyebrow">作品</p>
           <h2>最近想摆出来的东西</h2>
         </div>
-        <div class="cards three">
-          <article class="work-card">
-            <div class="visual visual-a"></div>
-            <div class="card-meta">
-              <span>个人项目</span>
-              <span>二零二六</span>
-            </div>
-            <h3>日常找乐子清单</h3>
-            <p>把生活里能快速回血的小事整理成一份轻量清单。</p>
-          </article>
-          <article class="work-card">
-            <div class="visual visual-b"></div>
-            <div class="card-meta">
-              <span>写作</span>
-              <span>二零二六</span>
-            </div>
-            <h3>周末散步笔记</h3>
-            <p>记录城市边角、偶遇和一些不太严肃的想法。</p>
-          </article>
-          <article class="work-card empty-card">
+        <div class="cards three" data-works-preview aria-live="polite">
+          <article class="work-card state-card">
             <div class="visual visual-empty"></div>
             <div class="card-meta">
-              <span>待补充</span>
-              <span>以后</span>
+              <span>加载中</span>
             </div>
-            <h3>下一件作品</h3>
-            <p>位置先留着，等一个值得放上来的小成果。</p>
+            <h3>正在读取作品</h3>
+            <p>稍等一下，正在取最新内容。</p>
           </article>
         </div>
       </section>
@@ -90,10 +71,14 @@
           <h2>一些还在路上的记录</h2>
           <p class="section-copy">随记会慢慢补上。先把空间留给生活里的小发现。</p>
         </div>
-        <div class="empty-state compact">
-          <div class="empty-mark">先空着</div>
-          <h3>笔记还在路上</h3>
-          <p>等有了适合留下来的日常观察、灵感碎片和开心事，会放在这里。</p>
+        <div class="note-list" data-notes-preview aria-live="polite">
+          <article class="note-card">
+            <div>
+              <time>加载中</time>
+              <h3>正在读取随记</h3>
+              <p>稍等一下，正在取最新内容。</p>
+            </div>
+          </article>
         </div>
       </section>
     </main>
@@ -101,5 +86,6 @@
       <span>找乐子的千山</span>
       <span>在生活中找点乐子。</span>
     </footer>
+    <script src="site-data.js"></script>
   </body>
 </html>

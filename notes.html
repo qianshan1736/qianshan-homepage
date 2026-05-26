@@ -8,7 +8,7 @@
     <meta name="description" content="找乐子的千山的生活记录和随记。">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body data-page="notes">
     <header class="site-header">
       <a class="brand" href="index.html" aria-label="找乐子的千山首页">
         <span class="brand-mark" role="img" aria-label="找乐子的千山头像">山</span>
@@ -29,15 +29,28 @@
         <p>关于生活、作品、散步和那些让人松一口气的瞬间。</p>
       </section>
 
-      <section class="empty-state">
-        <div class="empty-mark">先空着</div>
-        <h2>笔记还在路上</h2>
-        <p>这里会慢慢收集日常观察、灵感碎片和小小的开心事。现在先给安静留一点空间。</p>
+      <section class="section-grid page-section" aria-labelledby="notes-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">记录</p>
+            <h2 id="notes-title">最近写下的东西</h2>
+          </div>
+        </div>
+        <div class="note-list note-grid" data-notes-grid aria-live="polite">
+          <article class="note-card">
+            <div>
+              <time>加载中</time>
+              <h3>正在读取随记</h3>
+              <p>稍等一下，正在取最新内容。</p>
+            </div>
+          </article>
+        </div>
       </section>
     </main>
     <footer class="site-footer">
       <span>找乐子的千山</span>
       <span>随记</span>
     </footer>
+    <script src="site-data.js"></script>
   </body>
 </html>
