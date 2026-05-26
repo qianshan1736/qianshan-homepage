@@ -10,7 +10,7 @@ const PAGE_LABELS = {
 const WORK_VISUAL_CLASSES = ['visual-a', 'visual-b', 'visual-c'];
 
 const HOME_DEFAULTS = {
-  eyebrow: '乐子信号',
+  tags: ['乐子人', '健忘者'],
   title: '找乐子的千山',
   lead: '人在搬砖，心在登山',
   intro: '这里收放作品、观察和一些微小的乐子信号。认真工作，也认真从生活的噪声里截获一点喘气的空间。',
@@ -34,7 +34,6 @@ const PLACEHOLDER_TEXT = new Set([
   '没有介绍',
   '工作那么累，必须在生活中找点乐子放松下',
   '工作那么累，为什么不在生活中找点乐子放松下。',
-  '在高压日常里，给自己留一条逃生路线。',
   '认真生活，也认真给自己留一点喘气的空间。',
   '一个会认真工作，也会认真从日常系统里捞点乐子的人。',
   '一个会认真工作，也会认真给生活找点乐子的人。',
@@ -83,6 +82,23 @@ function normalizeText(value) {
   }
 
   return String(value).trim();
+}
+
+function normalizeList(value) {
+  if (value === null || value === undefined) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeText(item))
+      .filter(Boolean);
+  }
+
+  return normalizeText(value)
+    .split(/[\n,，、/]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function renderAboutTitle(title) {
@@ -159,7 +175,7 @@ function getImageField(fields, names) {
     const value = fields[name];
     const image = Array.isArray(value) ? value[0] : value;
     if (image && typeof image === 'object') {
-      const url = image.tmp_url || image.url || image.link;
+      const url = proxiedFeishuImageUrl(image) || image.tmp_url || image.url || image.link;
       if (url) {
         return {
           url: String(url),
@@ -178,6 +194,51 @@ function getImageField(fields, names) {
   }
 
   return null;
+}
+
+function proxiedFeishuImageUrl(image) {
+  const fileToken = image.file_token || image.fileToken;
+  if (!fileToken) {
+    return '';
+  }
+
+  const url = new URL('/api/media', FEISHU_API_BASE);
+  url.searchParams.set('file_token', fileToken);
+
+  const sourceUrl = image.url || image.tmp_url || '';
+  if (sourceUrl) {
+    try {
+      const source = new URL(sourceUrl);
+      const extra = source.searchParams.get('extra');
+      if (extra) {
+        url.searchParams.set('extra', extra);
+      }
+    } catch {
+      // Ignore malformed Feishu attachment URLs and use token-only proxying.
+    }
+  }
+
+  if (image.type) {
+    url.searchParams.set('type', image.type);
+  }
+
+  if (image.name) {
+    url.searchParams.set('name', image.name);
+  }
+
+  return url.toString();
+}
+
+function setCssImageVariableWhenAvailable(name, image) {
+  if (!image || !image.url) {
+    return;
+  }
+
+  const probe = new Image();
+  probe.onload = () => {
+    document.documentElement.style.setProperty(name, `url("${image.url}")`);
+  };
+  probe.src = image.url;
 }
 
 function recordFields(record) {
@@ -211,13 +272,14 @@ function renderWorkCards(container, records, options = {}) {
       intro: getField(fields, ['介绍', '简介', '摘要', '描述', '内容']),
       category: getField(fields, ['分类', '类型', '标签']),
       date: getField(fields, ['年份', '日期', '时间', '发布于'], ''),
+      image: getImageField(fields, ['图片', '封面', '作品图片', '截图']),
       link: getLinkField(fields, ['链接', 'URL', '地址', '作品链接'])
     }))
     .filter((work) => work.title)
     .slice(0, options.limit || records.length);
 
   if (works.length === 0) {
-    container.innerHTML = stateCard('作品频道暂无信号', '接入「名称」或「标题」后，项目会自动进入信号库。', '待接入');
+    container.innerHTML = stateCard('乐子库暂时空着', '接入「名称」或「标题」后，项目会自动进入乐子库。', '待接入');
     return;
   }
 
@@ -238,7 +300,11 @@ function renderWorkCards(container, records, options = {}) {
 
     return `
       <article class="work-card">
-        <div class="visual ${WORK_VISUAL_CLASSES[index % WORK_VISUAL_CLASSES.length]}"></div>
+        ${
+          work.image
+            ? `<div class="visual work-image"><img src="${escapeHtml(work.image.url)}" alt="${escapeHtml(work.image.alt || work.title)}" loading="lazy" onerror="this.closest('.work-image').classList.add('image-failed'); this.remove();"></div>`
+            : `<div class="visual ${WORK_VISUAL_CLASSES[index % WORK_VISUAL_CLASSES.length]}"></div>`
+        }
         ${metaHtml}
         <h3>${titleHtml}</h3>
         <p>${escapeHtml(work.intro || '这条作品还没有写入说明，先把信号保留在这里。')}</p>
@@ -303,6 +369,7 @@ function stateCard(title, text, label = '提示') {
 
 async function mountHomePage() {
   const heroCopy = document.querySelector('[data-home-copy]');
+  const homeTags = document.querySelector('[data-home-tags]');
   const worksGrid = document.querySelector('[data-works-preview]');
   const notesGrid = document.querySelector('[data-notes-preview]');
 
@@ -317,9 +384,19 @@ async function mountHomePage() {
     const title = polishText(getField(homeFields, ['账号名称', '标题', '名称', '主标题']), HOME_DEFAULTS.title);
     const lead = polishText(getField(homeFields, ['副标题', '标语', '简介']), HOME_DEFAULTS.lead);
     const intro = polishText(getField(homeFields, ['个人介绍', '介绍', '正文', '描述', '内容']), HOME_DEFAULTS.intro);
-    const eyebrow = polishText(getField(homeFields, ['眉标', '标签', '分类']), HOME_DEFAULTS.eyebrow);
+    const tags = normalizeList(homeFields['标签'] || homeFields['眉标'] || homeFields['分类']);
+    const avatar = getImageField(homeFields, ['头像', '头像图片']);
+    const heroBg = getImageField(homeFields, ['背景图片', '首页背景', '背景图']);
+
+    setCssImageVariableWhenAvailable('--avatar-image', avatar);
+    setCssImageVariableWhenAvailable('--hero-bg-image', heroBg);
+
+    if (homeTags) {
+      const nextTags = tags.length > 0 ? tags : HOME_DEFAULTS.tags;
+      homeTags.innerHTML = nextTags.map((tag) => `<span class="eyebrow">${escapeHtml(tag)}</span>`).join('');
+    }
+
     if (heroCopy && (title || lead || intro)) {
-      heroCopy.querySelector('.eyebrow').textContent = eyebrow;
       heroCopy.querySelector('h1').textContent = title;
       heroCopy.querySelector('.lead').textContent = lead;
       heroCopy.querySelector('.intro').textContent = intro;
@@ -487,7 +564,7 @@ async function mountAboutPage() {
       contactCard.querySelector('p').textContent = contactText;
       const wechatNode = contactCard.querySelector('.wechat');
       wechatNode.innerHTML = wechatImage
-        ? `<img src="${escapeHtml(wechatImage.url)}" alt="${escapeHtml(wechatImage.alt || '微信二维码')}" loading="lazy">`
+        ? `<img src="${escapeHtml(wechatImage.url)}" alt="${escapeHtml(wechatImage.alt || '微信二维码')}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(wechat)}';">`
         : escapeHtml(wechat);
     }
   } catch (error) {
