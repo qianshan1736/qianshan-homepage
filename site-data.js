@@ -548,28 +548,48 @@ async function mountAboutPage() {
 
     if (aboutMain && (title || lead || body)) {
       const eyebrowNode = aboutMain.querySelector('.eyebrow');
+      const titleNode = aboutMain.querySelector('h1');
+      const leadNode = aboutMain.querySelector('.lead');
+      const bodyNode = aboutMain.querySelector('[data-about-body]');
       if (eyebrowNode) {
         eyebrowNode.textContent = eyebrow;
         eyebrowNode.hidden = !eyebrow;
       }
-      aboutMain.querySelector('h1').innerHTML = renderAboutTitle(title);
-      aboutMain.querySelector('.lead').textContent = lead;
-      aboutMain.querySelector('[data-about-body]').innerHTML = body
-        ? body.split(/\n+/).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')
-        : '';
+      if (titleNode) {
+        titleNode.innerHTML = renderAboutTitle(title);
+      }
+      if (leadNode) {
+        leadNode.textContent = lead;
+      }
+      if (bodyNode) {
+        bodyNode.innerHTML = body
+          ? body.split(/\n+/).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')
+          : '';
+      }
     }
 
     if (contactCard) {
-      contactCard.querySelector('h2').textContent = contactTitle;
-      contactCard.querySelector('p').textContent = contactText;
+      const contactTitleNode = contactCard.querySelector('h2');
+      const contactTextNode = contactCard.querySelector('p');
       const wechatNode = contactCard.querySelector('.wechat');
-      wechatNode.innerHTML = wechatImage
-        ? `<img src="${escapeHtml(wechatImage.url)}" alt="${escapeHtml(wechatImage.alt || '微信二维码')}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(wechat)}';">`
-        : escapeHtml(wechat);
+      if (contactTitleNode) {
+        contactTitleNode.textContent = contactTitle;
+      }
+      if (contactTextNode) {
+        contactTextNode.textContent = contactText;
+      }
+      if (wechatNode) {
+        wechatNode.innerHTML = wechatImage
+          ? `<img src="${escapeHtml(wechatImage.url)}" alt="${escapeHtml(wechatImage.alt || '微信二维码')}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(wechat)}';">`
+          : escapeHtml(wechat);
+      }
     }
   } catch (error) {
     if (aboutMain) {
-      aboutMain.querySelector('[data-about-body]').innerHTML = `<p>${escapeHtml(error.message || '身份档案连接失败。')}</p>`;
+      const bodyNode = aboutMain.querySelector('[data-about-body]');
+      if (bodyNode) {
+        bodyNode.innerHTML = `<p>${escapeHtml(error.message || '身份档案连接失败。')}</p>`;
+      }
     }
   }
 }
